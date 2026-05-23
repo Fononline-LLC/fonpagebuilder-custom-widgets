@@ -2,32 +2,32 @@
 /**
  * FonCustomWidget_example_card
  *
- * Örnek kart widget'ı için konfigürasyon sınıfı.
+ * Configuration class for the example card widget.
  *
- * KURAL: Sınıf adı mutlaka FonCustomWidget_{type} formatında olmalıdır.
+ * RULE: The class name must be in the FonCustomWidget_{type} format.
  *
- * Kısıtlar:
- *  - $_(GET|POST|REQUEST|COOKIE|SERVER) süper globallerine doğrudan erişim YASAK.
- *  - exec(), system(), eval(), shell_exec() vb. YASAK.
- *  - curl_exec(), fsockopen() gibi ağ çağrıları YASAK.
- *  - file_put_contents(), unlink() vb. dosya yazma/silme işlemleri YASAK.
+ * Restrictions:
+ *  - Direct access to $_(GET|POST|REQUEST|COOKIE|SERVER) superglobals is PROHIBITED.
+ *  - exec(), system(), eval(), shell_exec(), etc. are PROHIBITED.
+ *  - Network calls such as curl_exec() and fsockopen() are PROHIBITED.
+ *  - File write/delete operations such as file_put_contents() and unlink() are PROHIBITED.
  *
- * PageData sınıfının tüm statik metodlarını kullanabilirsiniz.
- * Örneğin: PageData::button_types($lang), PageData::aligns($lang) vb.
+ * You may use all static methods of the PageData class.
+ * For example: PageData::button_types($lang), PageData::aligns($lang), etc.
  */
 class FonCustomWidget_example_card
 {
     /**
-     * Widget konfigürasyon dizisini döndürür.
+     * Returns the widget configuration array.
      *
-     * $language parametresi: builder genel dil anahtarları + widget'a özgü
-     * anahtarlar (CustomWidgetRegistry::getWidgetLang ile yüklenip birleştirilmiş).
-     * Anahtarlar widget'ın lang/{lang}.php dosyasından gelir; bilinmeyenler
-     * için ?? operatörüyle sabit bir İngilizce fallback kullanılır.
+     * $language parameter: builder-wide language keys + widget-specific
+     * keys (loaded and merged via CustomWidgetRegistry::getWidgetLang).
+     * Keys come from the widget's lang/{lang}.php file; for unknown keys,
+     * a fixed English fallback is used via the ?? operator.
      *
-     * @param array<string,string> $language   Builder + widget dil dizisi
-     * @param array<string,mixed>  $widgetData Mevcut widget kayıtlı verisi
-     * @return array<string,mixed>             Widget panel konfigürasyonu
+     * @param array<string,string> $language   Builder + widget language array
+     * @param array<string,mixed>  $widgetData Existing saved widget data
+     * @return array<string,mixed>             Widget panel configuration
      */
     public static function getConfig(array $language, array $widgetData): array
     {
@@ -35,7 +35,7 @@ class FonCustomWidget_example_card
         $multiLanguage = explode(',', (string)($widgetData['language'] ?? 'en'));
         $currentLang   = $widgetData['currentLang'] ?? 'en';
 
-        // --- Çok dilli alan varsayılan değerleri ---
+        // --- Multilingual field default values ---
         $defaultTitle = !empty($widget['title'][$currentLang])
             ? $widget['title'][$currentLang]
             : ($language['field_title'] ?? 'Card Title');
@@ -48,7 +48,7 @@ class FonCustomWidget_example_card
             ? $widget['name_widget'][$currentLang]
             : ($language['widget_name'] ?? 'Example Card');
 
-        // Çok dilli değerleri doldur
+        // Populate multilingual values
         $titleArr = [];
         $textArr  = [];
         $nameArr  = [];
@@ -72,21 +72,21 @@ class FonCustomWidget_example_card
             'modern'  => $language['widget_style_modern'] ?? 'Modern Style',
         ];
         $stylePreviews = [
-            'default' => 'https://picsum.photos/id/1/600/400', //Kendi görsellerinizi kullanabilirsiniz
-            'modern'  => 'https://picsum.photos/id/2/600/400', //Kendi görsellerinizi kullanabilirsiniz
+            'default' => 'https://picsum.photos/id/1/600/400', //You can use your own images.
+            'modern'  => 'https://picsum.photos/id/2/600/400', //You can use your own images.
         ];
 
         return [
             // =============================================
-            // GENEL AYARLAR PANELI
+            // GENERAL SETTINGS PANEL
             // =============================================
             'general' => [
                 'title'  => $language['widget_general_settings'] ?? 'General Settings',
                 'icon'   => 'fa fa-cog',
                 'fields' => [
-                    // Widget Adı (builder listesinde görünen isim)
-                    // type: textLanguage — çok dilli tek satır metin
-                    // values: dil koduna göre dolu değerler dizisi
+                    // Widget Name (the name shown in the builder list)
+                    // type: textLanguage — multilingual single-line text
+                    // values: array of values populated by language code
                     'name_widget' => [
                         'type'    => 'textLanguage',
                         'default' => $defaultWidgetName,
@@ -99,14 +99,14 @@ class FonCustomWidget_example_card
             ],
 
             // =============================================
-            // İÇERİK PANELI
+            // CONTENT PANEL
             // =============================================
             'content' => [
                 'title'  => $language['widget_content_settings'] ?? 'Content',
                 'icon'   => 'far fa-file-alt',
                 'fields' => [
-                    // Kart Başlığı
-                    // type: textLanguage — çok dilli tek satır metin
+                    // Card Title
+                    // type: textLanguage — multilingual single-line text
                     'title' => [
                         'type'    => 'textLanguage',
                         'default' => $defaultTitle,
@@ -116,8 +116,8 @@ class FonCustomWidget_example_card
                         'inline'  => true,
                     ],
 
-                    // Kart İçerik Metni
-                    // type: textareaLanguage — çok dilli çok satır metin
+                    // Card Content Text
+                    // type: textareaLanguage — multilingual multi-line text
                     'content_text' => [
                         'type'    => 'textareaLanguage',
                         'default' => $defaultText,
@@ -127,9 +127,9 @@ class FonCustomWidget_example_card
                         'inline'  => true,
                     ],
 
-                    // İkon (FontAwesome class)
-                    // type: icon — FonPageBuilder'ın entegre FontAwesome ikon seçicisi
-                    // default: FontAwesome class string (örn: 'fas fa-star')
+                    // Icon (FontAwesome class)
+                    // type: icon — FonPageBuilder's integrated FontAwesome icon picker
+                    // default: FontAwesome class string (e.g.: 'fas fa-star')
                     'icon_class' => [
                         'type'    => 'icon',
                         'default' => !empty($widget['icon_class']) ? $widget['icon_class'] : 'fas fa-star',
@@ -138,9 +138,9 @@ class FonCustomWidget_example_card
                         'inline'  => true,
                     ],
 
-                    // Kart Rengi
-                    // type: select — açılır liste
-                    // values: ['option_value' => 'Görünen Metin', ...] şeklinde anahtar-değer dizisi
+                    // Card Color
+                    // type: select — dropdown list
+                    // values: key-value array in the form ['option_value' => 'Display Text', ...]
                     'card_color' => [
                         'type'    => 'select',
                         'default' => !empty($widget['card_color']) ? $widget['card_color'] : 'primary',
@@ -159,11 +159,11 @@ class FonCustomWidget_example_card
                         'inline'  => true,
                     ],
 
-                    // Hizalama
-                    // type: select — values anahtarıyla seçenekler
-                    // depend: hangi alana bağlı olarak gösterileceği kuralı
-                    //   format: [["alan_adı", "operatör", "değer"], ...]
-                    //   operatörler: "=" veya "!="
+                    // Alignment
+                    // type: select — options via the values key
+                    // depend: visibility rule for the bound field
+                    //   format: [["field_name", "operator", "value"], ...]
+                    //   operators: "=" or "!="
                     'text_align' => [
                         'type'    => 'select',
                         'default' => !empty($widget['text_align']) ? $widget['text_align'] : 'center',
@@ -175,7 +175,7 @@ class FonCustomWidget_example_card
                             'right'  => $language['align_right']  ?? 'Right',
                         ],
                         'inline'  => true,
-                        // Hizalamayı yalnızca ikon gösterilirken aktif et (depend örneği)
+                        // Conditional visibility: Only show alignment if card_color is not empty
                         'depend'  => [
                             ['card_color', '!=', ''],
                         ],
@@ -184,14 +184,14 @@ class FonCustomWidget_example_card
             ],
 
             // =============================================
-            // BAĞLANTI PANELI
+            // LINK PANEL
             // =============================================
             'link' => [
                 'title'  => $language['tab_link'] ?? 'Link',
                 'icon'   => 'fas fa-link',
                 'fields' => [
-                    // type: text — tek satır metin kutusu
-                    // placeholder: gri ipucu metin
+                    // type: text — single-line text input
+                    // placeholder: gray hint text
                     'button_text' => [
                         'type'        => 'text',
                         'default'     => !empty($widget['button_text']) ? $widget['button_text'] : '',
@@ -207,7 +207,7 @@ class FonCustomWidget_example_card
                         'desc'        => $language['field_button_url_desc'] ?? 'Example: /products or https://example.com',
                         'inline'      => true,
                         'placeholder' => 'https://example.com',
-                        // URL alanı yalnızca button_text doluysa görünsün
+                        // Show the URL field only when button_text is filled
                         'depend'      => [
                             ['button_text', '!=', ''],
                         ],
@@ -230,7 +230,7 @@ class FonCustomWidget_example_card
             ],
 
             // =============================================
-            // STİL PANELI
+            // STYLE PANEL
             // =============================================
             'style' => [
                 'title'  => $language['widget_style_settings'] ?? 'Style',
@@ -247,17 +247,17 @@ class FonCustomWidget_example_card
                     ],
 
                     // -----------------------------------------------------------------
-                    // 'child' ANAHTAR ÖRNEĞİ (üst seviye — "type" anahtarı YOK)
+                    // 'child' KEY EXAMPLE (top level — NO "type" key)
                     // -----------------------------------------------------------------
-                    // 'child', bir alan adı altında birden fazla alt alanı (sub-field)
-                    // tek blokta gruplamak için kullanılır. Bootstrap row/cols içinde
-                    // yan yana gösterilir.
+                    // 'child' is used to group multiple sub-fields under a single field name
+                    // in one block. They are displayed side by side within Bootstrap rows/columns.
+                    // 
                     //
-                    // ÜST SEVİYE ERİŞİM: $widget['card_text_color']['normal']
+                    // TOP-LEVEL ACCESS: $widget['card_text_color']['normal']
                     //                     $widget['card_text_color']['hover']
                     //
-                    // NOT: 'child' içindeki her alt alan kendi 'type', 'default',
-                    //      'name', 'desc' anahtarlarını taşımalıdır.
+                    // NOTE: Each sub-field inside 'child' must have its own 'type', 'default',
+                    //      'name', and 'desc' keys.
                     // -----------------------------------------------------------------
                     'card_text_color' => [
                         'name' => $language['field_card_text_color'] ?? 'Card Text Color',
@@ -283,7 +283,7 @@ class FonCustomWidget_example_card
                         ],
                     ],
 
-                    // 'child' + 'child_col' => 'tab' — alt alanları sekme (tab) olarak gösterir
+                    // 'child' + 'child_col' => 'tab' — displays sub-fields as tabs
                     'card_bg_color' => [
                         'name'      => $language['field_bg_color'] ?? 'Card Background',
                         'desc'      => '',
@@ -309,8 +309,8 @@ class FonCustomWidget_example_card
                         ],
                     ],
 
-                    // type: slider — kaydırıcı
-                    // min, max, step zorunludur
+                    // type: slider — range slider
+                    // min, max, and step are required
                     'border_radius' => [
                         'type'    => 'slider',
                         'default' => !empty($widget['border_radius']) ? $widget['border_radius'] : '8',
@@ -320,12 +320,12 @@ class FonCustomWidget_example_card
                         'max'     => '50',
                         'step'    => '1',
                         'inline'  => true,
-                        // addon: alanın sağına/soluna ek metin (opsiyonel)
+                        // addon: additional text on the left/right side of the field (optional)
                         'addon'   => ['right' => 'px'],
                     ],
 
-                    // type: number — sayı girişi
-                    // min, max, step zorunlu; addon opsiyonel
+                    // type: number — numeric input
+                    // min, max, and step are required; addon is optional
                     'opacity' => [
                         'type'    => 'number',
                         'default' => !empty($widget['opacity']) ? $widget['opacity'] : '100',
@@ -338,7 +338,7 @@ class FonCustomWidget_example_card
                         'inline'  => true,
                     ],
 
-                    // type: color — renk seçici
+                    // type: color — color picker
                     'bg_color' => [
                         'type'    => 'color',
                         'default' => !empty($widget['bg_color']) ? $widget['bg_color'] : '#ffffff',
@@ -347,8 +347,8 @@ class FonCustomWidget_example_card
                         'inline'  => true,
                     ],
 
-                    // type: text — responsive modunda kullanım örneği
-                    // responsive: true olunca her ekran boyutu (xl/lg/md/sm/xs) için ayrı değer girilebilir
+                    // type: text — usage example in responsive mode
+                    // When responsive: true, separate values can be entered for each screen size (xl/lg/md/sm/xs).
                     'padding' => [
                         'type'        => 'text',
                         'default'     => !empty($widget['padding']) ? $widget['padding'] : ["xl" => "20px", "lg" => "", "md" => "", "sm" => "", "xs" => ""],

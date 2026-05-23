@@ -2,20 +2,20 @@
 /**
  * FonCustomWidget_notice_box
  *
- * Bildirim kutusu widget'ı için konfigürasyon sınıfı.
+ * Configuration class for the notice box widget.
  *
- * KURAL: Sınıf adı mutlaka FonCustomWidget_{type} formatında olmalıdır.
+ * RULE: The class name must be in the FonCustomWidget_{type} format.
  */
 class FonCustomWidget_notice_box
 {
     /**
-     * Widget konfigürasyon dizisini döndürür.
+     * Returns the widget configuration array.
      *
-     * $language parametresi: builder genel dil anahtarları + widget'a özgü
-     * anahtarlar (lang/tr.php veya lang/en.php) birleştirilmiş biçimde gelir.
+     * $language parameter: builder-wide language keys + widget-specific
+     * keys (lang/tr.php or lang/en.php) are merged and provided together.
      *
-     * @param array<string,string> $language   Builder + widget dil dizisi
-     * @param array<string,mixed>  $widgetData Mevcut widget kayıtlı verisi
+     * @param array<string,string> $language   Builder + widget language array
+     * @param array<string,mixed>  $widgetData Existing saved widget data
      * @return array<string,mixed>             Widget panel konfigürasyonu
      */
     public static function getConfig(array $language, array $widgetData): array
@@ -54,7 +54,7 @@ class FonCustomWidget_notice_box
                 : $defaultWidgetName;
         }
 
-        // select için values: ['value' => 'Görünen etiket', ...]
+        // For select, values: ['value' => 'Display label', ...]
         $noticeTypes = [
             'info'    => $language['type_info']    ?? 'Info',
             'success' => $language['type_success'] ?? 'Success',
@@ -69,20 +69,20 @@ class FonCustomWidget_notice_box
             'modern'  => $language['widget_style_modern'] ?? 'Modern Style',
         ];
         $stylePreviews = [
-            'default' => 'https://picsum.photos/id/1/600/400', //Kendi görsellerinizi kullanabilirsiniz
-            'modern'  => 'https://picsum.photos/id/2/600/400', //Kendi görsellerinizi kullanabilirsiniz
+            'default' => 'https://picsum.photos/id/1/600/400', // You can use your own images.
+            'modern'  => 'https://picsum.photos/id/2/600/400', // You can use your own images.
         ];
 
         return [
             // =============================================
-            // GENEL AYARLAR
+            // GENERAL SETTINGS
             // =============================================
             'general' => [
                 'title'  => $language['widget_general_settings'] ?? 'General Settings',
                 'icon'   => 'fa fa-cog',
                 'fields' => [
-                    // type: textLanguage — çok dilli tek satır metin
-                    // values: her dil kodu için kayıtlı değerleri tutan dizi
+                    // type: textLanguage — multilingual single-line text
+                    // values: array that stores saved values for each language code
                     'name_widget' => [
                         'type'    => 'textLanguage',
                         'default' => $defaultWidgetName,
@@ -95,15 +95,15 @@ class FonCustomWidget_notice_box
             ],
 
             // =============================================
-            // İÇERİK
+            // CONTENT
             // =============================================
             'content' => [
                 'title'  => $language['widget_content_settings'] ?? 'Content',
                 'icon'   => 'far fa-file-alt',
                 'fields' => [
-                    // Bildirim Türü
-                    // type: select — açılır seçim listesi
-                    // values anahtarı: ['seçenek_değeri' => 'Görünen Etiket', ...] biçiminde olmalı
+                    // Notice Type
+                    // type: select — dropdown selection list
+                    // The values key must be in the form ['option_value' => 'Display Label', ...].
                     'notice_type' => [
                         'type'    => 'select',
                         'default' => !empty($widget['notice_type']) ? $widget['notice_type'] : 'info',
@@ -113,9 +113,9 @@ class FonCustomWidget_notice_box
                         'inline'  => true,
                     ],
 
-                    // İkon göster/gizle
-                    // type: bool — evet/hayır düğmesi (toggle switch)
-                    // default: 'yes' (göster) veya 'no' (gizle)
+                    // Show/Hide Icon
+                    // type: bool — yes/no toggle button (toggle switch)
+                    // default: 'yes' (show) or 'no' (hide)
                     'show_icon' => [
                         'type'    => 'bool',
                         'default' => !empty($widget['show_icon']) ? $widget['show_icon'] : 'yes',
@@ -124,8 +124,8 @@ class FonCustomWidget_notice_box
                         'inline'  => true,
                     ],
 
-                    // Başlık — depend: show_icon = yes iken görünsün
-                    // type: textLanguage — çok dilli tek satır metin
+                    // Title — depend: show when show_icon = yes
+                    // type: textLanguage — multilingual single-line text
                     'title' => [
                         'type'    => 'textLanguage',
                         'default' => $defaultTitle,
@@ -133,27 +133,27 @@ class FonCustomWidget_notice_box
                         'name'    => $language['field_title'] ?? 'Title',
                         'desc'    => $language['field_title_desc'] ?? 'Title of the notice box.',
                         'inline'  => true,
-                        // depend: [["alan_adı", "operatör", "değer"], ...]
-                        // operatör "=" veya "!="
-                        // 4. eleman "ml" → çok dilli alanın dolu olup olmadığını kontrol eder
+                        // depend: [["field_name", "operator", "value"], ...]
+                        // operator "=" or "!="
+                        // 4th element "ml" → checks whether the multilingual field has a value
                         'depend'  => [
                             ['show_icon', '=', 'yes'],
                         ],
                     ],
 
-                    // Başlık yazı tipi
-                    // type: typography — font ailesi, boyutu, kalınlığı vb. özellikleri içeren gelişmiş alan
+                    // Title font
+                    // type: typography — advanced field containing font family, size, weight, and similar properties
                     'title_font'  => [
                         'type'  =>'typography',
                         'default' => !empty($widget['title_font']) ? $widget['title_font'] : PageData::defaultTypography(),
                         'name'    => $language['widget_font_attributes'],
                         'desc'    => $language['widget_font_attributes_desc'],
                         'inline'  => true,
-                        'text-align' => false, // 'text-align' özelliğini devre dışı bırak
+                        'text-align' => false, // disable the 'text-align' property
                     ],
 
-                    // Mesaj
-                    // type: textareaLanguage — çok dilli çok satır metin
+                    // Message
+                    // type: textareaLanguage — multilingual multi-line text
                     'message' => [
                         'type'    => 'textareaLanguage',
                         'default' => $defaultMessage,
@@ -163,8 +163,8 @@ class FonCustomWidget_notice_box
                         'inline'  => true,
                     ],
 
-                    // Kapatılabilir mi?
-                    // type: bool — evet/hayır toggle (varsayılan: 'no')
+                    // Dismissible?
+                    // type: bool — yes/no toggle (default: 'no')
                     'dismissible' => [
                         'type'    => 'bool',
                         'default' => !empty($widget['dismissible']) ? $widget['dismissible'] : 'no',
@@ -174,17 +174,17 @@ class FonCustomWidget_notice_box
                     ],
 
                     // ---------------------------------------------------------------
-                    // 'repeatable' ALAN ÖRNEĞİ
+                    // 'repeatable' FIELD SAMPLE
                     // ---------------------------------------------------------------
-                    // 'type' => 'repeatable': Kullanıcının dinamik olarak eklip
-                    // silebileceği yinelenen öge listesi oluşturur.
+                    // 'type' => 'repeatable': Allows the user to dynamically add
+                    // and remove repeated items.
                     //
-                    // 'child' anahtarı: getRepeatableItems() metodundan dönen
-                    // öge dizisini (array of field arrays) alır — her öge, o
-                    // satırın field tanımlarının dizisidir.
+                    // 'child' key: accepts the array returned by getRepeatableItems()
+                    // array of field arrays — each item represents the field definitions for that row
+                    // of that row.
                     //
-                    // Veriye erişim: $widget['actions'] — her eleman bir satırın
-                    // kaydedilmiş değerleridir.
+                    // Data access: $widget['actions'] — each element is the saved values for one row.
+                    // 
                     // ---------------------------------------------------------------
                     'actions' => [
                         'type'  => 'repeatable',
@@ -195,7 +195,7 @@ class FonCustomWidget_notice_box
             ],
 
             // =============================================
-            // STİL
+            // STYLE
             // =============================================
             'style' => [
                 'title'  => $language['widget_style_settings'] ?? 'Style',
@@ -211,8 +211,8 @@ class FonCustomWidget_notice_box
                         'inline'   => true,
                     ],
 
-                    // Sol kenarlık
-                    // type: bool — evet/hayır toggle
+                    // Left border
+                    // type: bool — yes/no toggle
                     'border_left' => [
                         'type'    => 'bool',
                         'default' => !empty($widget['border_left']) ? $widget['border_left'] : 'yes',
@@ -221,8 +221,8 @@ class FonCustomWidget_notice_box
                         'inline'  => true,
                     ],
 
-                    // type: text — tek satır metin kutusu
-                    // placeholder: gri ipucu metin
+                    // type: text — single-line text input
+                    // placeholder: gray hint text
                     'font_size' => [
                         'type'        => 'text',
                         'default'     => !empty($widget['font_size']) ? $widget['font_size'] : '',
@@ -233,17 +233,17 @@ class FonCustomWidget_notice_box
                     ],
 
                     // ---------------------------------------------------------------
-                    // 'child' ANAHTAR ÖRNEĞİ (üst seviye — "type" anahtarı YOK)
+                    // 'child' KEY EXAMPLE (top level — NO "type" key)
                     // ---------------------------------------------------------------
-                    // 'child', bir alan adı altında birden fazla alt alanı
-                    // Bootstrap row/cols içinde gruplayarak gösterir.
+                    // 'child' groups multiple sub-fields under a single field name
+                    // and displays them grouped within Bootstrap rows/columns.
                     //
-                    // ÜST SEVİYE ERİŞİM:
+                    // TOP-LEVEL ACCESS:
                     //   $widget['accent_color']['normal']
                     //   $widget['accent_color']['hover']
                     //
-                    // 'child_col' => 'tab' opsiyonel anahtarıyla alt alanlar
-                    // satır yerine sekme (tab) olarak gösterilebilir.
+                    // With the optional 'child_col' => 'tab' key, sub-fields
+                    // can be shown as tabs instead of rows.
                     // ---------------------------------------------------------------
                     'accent_color' => [
                         'name'  => $language['field_accent_color'] ?? 'Border Accent Color',
@@ -274,14 +274,14 @@ class FonCustomWidget_notice_box
     }
 
     /**
-     * Tüm yinelenen öge field tanımlarını döndürür.
+     * Returns the field definitions for all repeated items.
      *
-     * Kaydedilmiş öge varsa her biri için getRepeatableItem() çağırır;
-     * yoksa tek boş varsayılan öge oluşturur.
+     * If saved items exist, it calls getRepeatableItem() for each one;
+     * otherwise it creates one empty default item.
      *
-     * @param array<string,mixed> $language   Builder + widget dil dizisi
-     * @param array<string,mixed> $widgetData Mevcut widget kayıtlı verisi
-     * @return array<int,array<string,mixed>> Her öge için field tanımları dizisi
+     * @param array<string,mixed> $language   Builder + widget language array
+     * @param array<string,mixed> $widgetData Existing saved widget data
+     * @return array<int,array<string,mixed>> An array of field definitions for each item
      */
     protected static function getRepeatableItems(array $language, array $widgetData): array
     {
@@ -308,20 +308,20 @@ class FonCustomWidget_notice_box
     }
 
     /**
-     * Tek bir yinelenen ögeye ait field tanım dizisini döndürür.
+     * Returns the field definition array for a single repeated item.
      *
-     * Bu metot içindeki 'child' anahtarlı alanlara FLAT (düz) biçimde
-     * erişilir: $item['button_color_normal'], $item['button_color_hover']
-     * (alt-çizgiyle birleştirilmiş — dizi anahtarı DEĞİL).
+     * Fields with the 'child' key inside this method are accessed in FLAT (plain) form
+     * accessed as: $item['button_color_normal'], $item['button_color_hover']
+     * (underscore-separated — NOT an array key).
      *
-     * @param int                 $id   Öge indeksi
-     * @param array<string,mixed> $item Kaydedilmiş öge verisi
-     * @param array<string,mixed> $data Yardımcı veri (language, currentLang, vb.)
-     * @return array<string,mixed>      Bu ögeye ait field tanımları
+     * @param int                 $id   Item Index
+     * @param array<string,mixed> $item Saved item data
+     * @param array<string,mixed> $data Helper data (language, currentLang, etc.)
+     * @return array<string,mixed>      Field definitions for this item
      */
     protected static function getRepeatableItem(int $id, array $item, array $data): array
     {
-        // Çok dilli etiket değerlerini hazırla
+        // Prepare multilingual label values
         $labelDefault = !empty($item['button_label'][$data['currentLang']])
             ? $item['button_label'][$data['currentLang']]
             : ($data['language']['field_button_text'] ?? 'Button');
@@ -334,7 +334,7 @@ class FonCustomWidget_notice_box
         }
 
         return [
-            // Düğme Etiketi (çok dilli)
+            // Button Label (multilingual)
             'button_label' => [
                 'type'    => 'textLanguage',
                 'default' => $labelDefault,
@@ -342,10 +342,10 @@ class FonCustomWidget_notice_box
                 'name'    => $data['language']['field_button_text'] ?? 'Button Label',
                 'desc'    => '',
                 'inline'  => true,
-                'as_title' => true, // Bu alanın değeri, repeatable öge başlığı olarak gösterilir
+                'as_title' => true, // The value of this field is used as the repeatable item title
             ],
 
-            // Düğme URL'si
+            // Button URL
             'button_url' => [
                 'type'        => 'text',
                 'default'     => !empty($item['button_url']) ? $item['button_url'] : '',
@@ -355,7 +355,7 @@ class FonCustomWidget_notice_box
                 'inline'      => true,
             ],
 
-            // Düğme Stili
+            // Button Style
             'button_style' => [
                 'type'    => 'select',
                 'default' => !empty($item['button_style']) ? $item['button_style'] : 'primary',
@@ -371,16 +371,16 @@ class FonCustomWidget_notice_box
             ],
 
             // -----------------------------------------------------------
-            // 'child' ANAHTAR ÖRNEĞİ — REPEATABLE İÇİNDE (FLAT ERİŞİM)
+            // 'child' KEY EXAMPLE — INSIDE REPEATABLE (FLAT ACCESS)
             // -----------------------------------------------------------
-            // 'type' anahtarı YOK — sadece 'child' anahtarı kullanılıyor.
+            // No 'type' key — only the 'child' key is used.
             //
-            // FLAT (düz) ERİŞİM (repeatable içinde olduğu için):
-            //   $item['button_color_normal']   ← alt-çizgiyle birleştirilmiş
+            // FLAT access (because it is inside repeatable):
+            //   $item['button_color_normal']   ← concatenated with underscore
             //   $item['button_color_hover']
             //
-            // Üst seviyede (repeatable dışında) kullanımda ise:
-            //   $widget['button_color']['normal']  ← dizi anahtarı
+            // When used at the top level (outside repeatable):
+            //   $widget['button_color']['normal']  ← array key (nested array)
             // -----------------------------------------------------------
             'button_color' => [
                 'name' => $data['language']['field_button_color'] ?? 'Button Color',
@@ -407,36 +407,36 @@ class FonCustomWidget_notice_box
             ],
 
             // -----------------------------------------------------------
-            // 'child_repeatable' ALAN ÖRNEĞİ
+            // 'child_repeatable' FIELD EXAMPLE
             // -----------------------------------------------------------
-            // Repeatable bir öge içinde ayrıca yinelenen alt ögeler
-            // tanımlamak için kullanılır (iç içe liste).
+            // Inside a repeatable item, used to define additional repeated sub-items
+            // (nested list).
             //
-            // 'values' anahtarı: Her sütunu tanımlayan dizi. Her eleman:
-            //   'name' → data anahtarı (kaydedilecek alan adı)
-            //   'lang' → formda görünen etiket
-            //   'type' → field tipi ('text', 'icon', 'select', vb.)
+            // 'values' key: Array defining each column. Each item:
+            //   'name' → data key (field name to save)
+            //   'lang' → label shown in the form
+            //   'type' → field type ('text', 'icon', 'select', etc.)
             //
-            // 'default' anahtarı: Yeni öge eklenirken kullanılacak
-            //   başlangıç verileri (dizi dizisi).
+            // 'default' key: initial data used when a new item is added
+            //   (array of arrays).
             //
-            // Veriye erişim: $item['button_badges'] → [['text'=>'...'], ...]
+            // Data access: $item['button_badges'] → [['text'=>'...'], ...]
             // -----------------------------------------------------------
             'button_badges' => [
                 'type'    => 'child_repeatable',
                 'name'    => $data['language']['field_badges'] ?? 'Badges',
                 'desc'    => $data['language']['field_badges_desc'] ?? 'Add small badge labels to this button.',
-                // Kaydedilmiş veri varsa onu kullan; yoksa alan yapısına uygun
-                // varsayılan satır ata — her eleman 'values' içindeki 'name'
-                // anahtarlarıyla ('text', 'color') eşleşmelidir.
+                // If saved data exists, use it; otherwise assign default rows
+                // matching the field structure — each element must exactly match
+                // the 'name' keys ('text', 'color') defined in 'values'.
                 'default' => !empty($item['button_badges']) ? $item['button_badges'] : [
                     [
                         'text'  => 'New',
                         'color' => 'primary',
                     ],
                 ],
-                // 'values' dizisi: Her satırda hangi alt alanların olduğunu tanımlar ve bunların formda nasıl görüneceğini belirler.
-                // Kullanılabilecek Alan (field) 'type' değerleri: 'image', 'text', 'number', 'textLanguage', 'select', 'checkbox','color ve 'icon'
+                // The 'values' array: Defines which sub-fields exist in each row and determines how they appear in the form.
+                // Available field 'type' values: 'image', 'text', 'number', 'textLanguage', 'select', 'checkbox', 'color', and 'icon'
                 'values'  => [
                     [
                         'name' => 'text',

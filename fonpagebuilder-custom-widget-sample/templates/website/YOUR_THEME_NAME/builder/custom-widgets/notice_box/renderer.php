@@ -5,17 +5,14 @@
 final class FonCustomWidgetRenderer_notice_box
 {
     /**
-     * Notice Box widget'ini frontend'de render eder.
+     * Renders the Notice Box widget on the frontend.
      *
-     * @param object $theme Aktif tema nesnesi.
-     * @param object $content Widget içerik verisi.
-     * @param string $moduleId Widget modül kimliği.
-     * @param array<string,mixed> $pageData Sayfa verileri.
-     * @param object $row Satır verisi.
-     * @param bool $isLCPCandidate LCP adayı işareti.
-     * @param object|null $widget Ham widget nesnesi.
-     * @return string Render edilmiş HTML.
-     * @throws \Throwable Beklenmeyen kritik hatalarda üst katmana bırakılır.
+     * @param object $theme Active theme object.
+     * @param object $content Widget content data.
+     * @param string $moduleId Widget module ID.
+     * @param array<string,mixed> $pageData Page data.
+     * @return string Rendered HTML output.
+     * @throws \Throwable Passed to the upper layer in case of unexpected critical errors.
      */
     public static function render(
         object $theme,
@@ -23,18 +20,18 @@ final class FonCustomWidgetRenderer_notice_box
         string $moduleId,
         array $pageData
     ): string {
-        // Geliştirme aşamasında içerik verisini incelemek için kullanabilirsiniz. Yayına almadan önce kaldırmayı unutmayın.
+        // You can use this to inspect the content data during development. Remember to remove it before going live.
         /*echo "<pre>content<br>";
         print_r(json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
         echo "</pre>";*/
 
 
-        $lang = Language::selected(); //Global olarak temada o anda aktif olan dil kodunu elde eder. Örn: 'en', 'tr', vs.
+        $lang = Language::selected(); //Retrieves the currently active language code globally in the theme. For example: 'en', 'tr', etc.
 
         $widgetId = 'fon-widget-' . ($moduleId !== '' ? preg_replace('/[^a-zA-Z0-9_-]/', '', $moduleId) : uniqid('custom-', true));
 
         $widgetData = [];
-        $widgetData['name_widget']= $theme::getFieldMultilingualText($content->name_widget ?? null, $lang, 'Example Card'); // Bu değer standarttır ve sadece yönetim panelinde gösterilir ve bileşeni tanımlamak için kullanılır. İsterseniz bileşenlerinizde de kullanabilirsiniz.
+        $widgetData['name_widget']= $theme::getFieldMultilingualText($content->name_widget ?? null, $lang, 'Example Card'); // This value is standard and is shown only in the admin panel and used to identify the component. You can also use it in your own widgets.
         $widgetData['notice_type'] = (string) (isset($content->notice_type) && $content->notice_type ? $content->notice_type : 'info');
         $widgetData['show_icon'] = (bool)(isset($content->show_icon) && $content->show_icon == 'yes' ? true : false);
         $widgetData['title'] = $theme::getFieldMultilingualText($content->title ?? null, $lang, 'Notice Title');
@@ -59,7 +56,7 @@ final class FonCustomWidgetRenderer_notice_box
         ];
         $widgetData['icon_class'] = $iconMap[$widgetData['notice_type']] ?? $iconMap['info'];
 
-		//Repeatable Items (Yinelenen Ögeler) için örnek:
+		//Example for Repeatable Items (Repeated Entries):
 		$widgetData['actions'] = [];
 		if (isset($content->actions) && is_array($content->actions)) {
 			foreach ($content->actions as $key => $action) {
@@ -70,7 +67,7 @@ final class FonCustomWidgetRenderer_notice_box
 					'button_color_normal' => trim((string) ($action->button_color_normal ?? '#007a7a')),
 					'button_color_hover' => trim((string) ($action->button_color_hover ?? '#ff9c01')),
 				];
-				//Child repeatable items (Alt yinelenen ögeler) için örnek:
+				//Example for child repeatable items (nested repeated items):
 				if (isset($action->button_badges) && is_array($action->button_badges)) {
                     foreach ($action->button_badges as $button_badge) {
                         $widgetData['actions'][$key]['button_badges'][] = [
@@ -82,7 +79,7 @@ final class FonCustomWidgetRenderer_notice_box
 			}
 		}
 
-        //Widget Özel CSS Biçimlendirme:
+        //Widget-specific CSS formatting:
         self::renderWidgetCss(
             $widgetId,
             $widgetData,
@@ -90,7 +87,7 @@ final class FonCustomWidgetRenderer_notice_box
             $pageData
         );
 
-        //Widget Özel JS Biçimlendirme:
+        //Widget-specific JS formatting:
         self::renderWidgetJs(
             $widgetId,
             $widgetData,
@@ -98,22 +95,22 @@ final class FonCustomWidgetRenderer_notice_box
             $pageData
         );
 
-        // Widget Özel Asset'leri (CSS/JS dosyaları, fontlar, vs.) ekleme:
+        // Enqueue / Inject widget-specific assets (CSS/JS files, fonts, etc.):
         self::addWidgetAssets(
             $theme
         );
 
-        // Widget HTML İçeriğini Render Etme:
-        // 1. Stil adını belirle (Yoksa veya geçersizse direkt 'default' döner).
-        // Eğer birden fazla stil sunuyorsanız her stil için bir render fonksiyonu oluşturmalısınız. Örneğin: renderWidgetStyleDefault, renderVidgetStyleModern vb.
+        // Rendering the widget HTML content:
+        // 1. Determine the style name (if missing or invalid, it falls back directly to 'default').
+        // If you offer multiple styles, you should create a render function for each style. For example: renderWidgetStyleDefault, renderVidgetStyleModern, etc.
         $funcWidget  = 'renderWidgetStyle' . ucfirst($widgetdata['widget_style'] ?? 'default');
 
-        // 2. Metod var mı kontrol et, yoksa 'default' metoduna geri dön (fallback)
+        // 2. Check whether the method exists; otherwise fall back to the 'default' method.
         if (!method_exists(self::class, $funcWidget)) {
             $funcWidget = 'renderWidgetStyleDefault';
         }
 
-        // 3. Widget stilinize uygun şekilde tek bir yerden return et
+        // 3. Return from a single place according to the selected widget style.
         return self::$funcWidget(
             $widgetId,
             $widgetData,
@@ -123,7 +120,7 @@ final class FonCustomWidgetRenderer_notice_box
     }
 
     /**
-     * Default style widget HTML'ini üretir.
+     * Generates the widget HTML for the default style.
      *
      * @param string $widgetId
      * @param array $widgetData
@@ -142,28 +139,28 @@ final class FonCustomWidgetRenderer_notice_box
 
         $output .= '<div id="' . htmlspecialchars($widgetId, ENT_QUOTES, 'UTF-8') . '" class="fon-widget-container fon-notice-box-widget">';
 
-		// Alert kapsayıcı ve dismissible kontrolü
+		// Alert container and dismissible check
         $dismissClass = $widgetData['dismissible'] ? 'alert-dismissible fade show' : '';
         $output .= '    <div class="alert alert-' . htmlspecialchars($widgetData['notice_type'], ENT_QUOTES, 'UTF-8') . ' ' . $dismissClass . ' fon-notice-box" role="alert">';
         $output .= '        <div class="d-flex align-items-start gap-2">';
 
-		// İkon kontrolü
+		// Icon check
         if ($widgetData['show_icon']) {
             $output .= '            <i class="' . htmlspecialchars($widgetData['icon_class'], ENT_QUOTES, 'UTF-8') . ' mt-1"></i>';
         }
 
         $output .= '            <div class="flex-grow-1">';
-		// Başlık kontrolü
+		// Title check
         if ($widgetData['title'] !== '') {
             $output .= '                <h5 class="mb-2 notice-title">' . htmlspecialchars($widgetData['title'], ENT_QUOTES, 'UTF-8') . '</h5>';
         }
 
-		// Mesaj kontrolü
+		// Message check
         if ($widgetData['message'] !== '') {
             $output .= '                <div class="mb-2 notice-desc">' . htmlspecialchars($widgetData['message'], ENT_QUOTES, 'UTF-8') . '</div>';
         }
 
-		// Aksiyon butonları (Döngü kısmı)
+		// Action buttons (loop section)
         if (!empty($widgetData['actions'])) {
             $output .= '                <div class="d-flex flex-wrap gap-2 mt-2">';
             foreach ($widgetData['actions'] as $action_key => $action) {
@@ -182,7 +179,7 @@ final class FonCustomWidgetRenderer_notice_box
         $output .= '            </div>';
         $output .= '        </div>';
 
-		// Kapatma butonu kontrolü
+		// Dismiss button check
         if ($widgetData['dismissible']) {
             $output .= '        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
         }
@@ -193,7 +190,7 @@ final class FonCustomWidgetRenderer_notice_box
     }
 
     /**
-     * Modern style widget HTML'ini üretir.
+     * Generates the widget HTML for the modern style.
      *
      * @param string $widgetId
      * @param array $widgetData
@@ -211,29 +208,29 @@ final class FonCustomWidgetRenderer_notice_box
 
         $output .= '<div id="' . htmlspecialchars($widgetId, ENT_QUOTES, 'UTF-8') . '" class="fon-widget-container fon-notice-box-widget fon-notice-box-modern">';
 
-		// Alert kapsayıcı ve dismissible kontrolü
+		// Alert container and dismissible check
         $dismissClass = $widgetData['dismissible'] ? 'alert-dismissible fade show' : '';
         $output .= '    <div class="alert ' . $dismissClass . ' fon-notice-box" role="alert">';
         $output .= '        <div class="d-flex align-items-start gap-2">';
 
-		// İkon kontrolü
+		// Icon check
         if ($widgetData['show_icon']) {
             $output .= '            <i class="' . htmlspecialchars($widgetData['icon_class'], ENT_QUOTES, 'UTF-8') . ' mt-1"></i>';
         }
 
         $output .= '            <div class="flex-grow-1">';
 
-		// Başlık kontrolü
+		// Title check
         if ($widgetData['title'] !== '') {
             $output .= '                <h5 class="mb-2 text-light notice-title">' . htmlspecialchars($widgetData['title'], ENT_QUOTES, 'UTF-8') . '</h5>';
         }
 
-		// Mesaj kontrolü
+		// Message check
         if ($widgetData['message'] !== '') {
             $output .= '                <div class="mb-2 text-light opacity-75 notice-text">' . htmlspecialchars($widgetData['message'], ENT_QUOTES, 'UTF-8') . '</div>';
         }
 
-		// Aksiyon butonları (Döngü)
+		// Action buttons (loop section)
         if (!empty($actions)) {
             $output .= '                <div class="d-flex flex-wrap gap-2 mt-2">';
             foreach ($widgetData['actions'] as $action_key => $action) {
@@ -252,7 +249,7 @@ final class FonCustomWidgetRenderer_notice_box
         $output .= '            </div>';
         $output .= '        </div>';
 
-		// Kapatma butonu kontrolü (Modern görünüm için beyaz versiyon)
+		// Dismiss button check (White version for the modern appearance)
         if ($widgetData['dismissible']) {
             $output .= '        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>';
         }
@@ -264,9 +261,9 @@ final class FonCustomWidgetRenderer_notice_box
     }
 
     /**
-     * Widget'a özel CSS kodlarını eklemek için kullanılır.
+     * Used to add widget-specific CSS code.
      *
-     * Stil kodu içerisinde <style></style> etiketlerini kullanmayınız. Sadece saf CSS kodu ekleyiniz. Tema, bu kodu uygun şekilde sayfaya ekleyecektir.
+     * Do not use <style></style> tags within the style code. Add raw CSS code only. The theme will properly inject this code into the page.
      *
      * @param string $widgetId
      * @param array $widgetData
@@ -283,7 +280,7 @@ final class FonCustomWidgetRenderer_notice_box
         $page = isset($pageData['page']) && is_string($pageData['page']) && trim($pageData['page']) !== ''
             ? trim($pageData['page'])
             : 'index';
-        $css = ''; // Widget ayarlarınızdan gelen verilerle CSS kodunu bu değişkene atayabilir veya widget stili (Modern, Default vb.) bazlı özel cssler ekleyebilir ya da doğrudan css kodunuzu bu değişkene atayabilirsiniz.
+        $css = ''; // You can assign CSS code to this variable using data from widget settings, add custom CSS based on the widget style (Modern, Default, etc.), or directly assign your raw CSS code.
 
         if ($widgetData['widget_style'] === 'modern') {
             $css .= '#'. htmlspecialchars($widgetId, ENT_QUOTES, 'UTF-8').' .fon-notice-box {';
@@ -337,16 +334,17 @@ final class FonCustomWidgetRenderer_notice_box
         }
 
 
-        // Dinamik olarak oluşturulan CSS'yi kaydet
+        // Register the dynamically generated CSS
         if ($css !== '' && is_callable([$theme, 'registerWidgetStyle'])) {
             $theme->registerWidgetStyle($page, $css);
         }
 
     }
+
     /**
-     * Widget'a özel JavaScript kodlarını eklemek için kullanılır.
+     * Used to add widget-specific JavaScript code.
      *
-     * Script kodu içerisinde <script></script> etiketleri içerisinde kullanınız. Okunurluğu iyileştirmek için HEREDOC kullanabilirsiniz..
+     * Wrap your script code within <script></script> tags. You can use HEREDOC to improve code readability.
      *
      * @param string $widgetId
      * @param array $widgetData
@@ -354,39 +352,38 @@ final class FonCustomWidgetRenderer_notice_box
      * @param array<string,mixed> $pageData
      * @return void
      */
-
     private static function renderWidgetJs(
         string $widgetId,
         array $widgetData,
         object $theme,
         array $pageData
     ): void {
-        // Widget ayarlarınızdaki verilere {$widgetData[]} değişkeninden erişebilir ve js kodunuzda kullanabilirsiniz.
+        // You can access data from your widget settings via the {$widgetData[]} variable and use it in your JS code.
         $page = isset($pageData['page']) && is_string($pageData['page']) && trim($pageData['page']) !== ''
             ? trim($pageData['page'])
             : 'index';
-        //HEREDOC için değişkenleri güvenli hale getirme
+        //Sanitize variables for HEREDOC usage
 		$widgetIdJs = htmlspecialchars($widgetId, ENT_QUOTES, 'UTF-8');
 		$pageJs = htmlspecialchars($page, ENT_QUOTES, 'UTF-8');
         $js = <<<JS
 <script>
-    // Örnek olarak widget yüklendiğinde konsola bir mesaj yazdıran basit bir JavaScript kodu ekleyelim. Gerçek kullanımda bu alana widget'inizle ilgili gerekli gördüğünüz herhangi bir JavaScript kodunu ekleyebilirsiniz.
+    // As an example, add a simple JavaScript snippet that logs a message to the console when the widget loads. In real-world usage, you can place any widget-specific JavaScript code here.
     console.log("{$widgetData['name_widget']} - {$widgetData['title']} JS Loaded for widget ID: {$widgetIdJs} on page: {$pageJs}");
 </script>
 JS;
 
-        // Dinamik olarak oluşturulan JavaScript'i kaydet
+        // Save the dynamically generated JavaScript
         if ($js !== '' && is_callable([$theme, 'registerWidgetScript'])) {
-            // Eğer header'a eklemek isterseniz 'footer' yerine 'header' girmelisiniz.
+            // If you want to add it to the header, use 'header' instead of 'footer'.
             $theme->registerWidgetScript('footer', $page, $js);
         }
 
     }
 
     /**
-     * Widget'a özel CSS/JS dosyaları, fontlar veya diğer asset'leri eklemek için kullanılır.
+     * Used to add widget-specific CSS/JS files, fonts, or other assets.
      *
-     * Eğer widget'iniz özel CSS veya JS dosyalarına ihtiyaç duyuyorsa, bu metod içinde tema nesnesinin uygun metodlarını kullanarak bu dosyaları ekleyebilirsiniz. Tema tarafından desteklenen ve bileşenlerinizde kullanabileceğiniz öntanımlı assetlere templates/website/TemaAdi/inc/main-head.php ve templates/website/TemaAdi/inc/constant-footer-js.php dosyasındaki $hoptions dizisi içerisindeki kontrollerden ulaşabilirsiniz. Örneğin: $hoptions['magnific'], $hoptions['jsvectormap'], $hoptions['intlTelInput'], $hoptions['select2'], vs. Kendi özel css ve js kodlarınızı her zaman templates/website/TemaAdi/css/custom.css ve templates/website/TemaAdi/js/custom.js dosyalarına ekleyebileeğinizi unutmayınız. Ancak bu metod içinde de dinamik olarak temanın desteklediği öntanımlı assetleri ekleyebilirsiniz.
+     * If your widget needs custom CSS or JS files, you can use the theme object's appropriate methods within this method to add them. You can discover predefined assets supported by the theme and available for use in your components through the checks in the $hoptions array inside the templates/website/TemaAdi/inc/main-head.php and templates/website/TemaAdi/inc/constant-footer-js.php files. For example: $hoptions['magnific'], $hoptions['jsvectormap'], $hoptions['intlTelInput'], $hoptions['select2'], etc. Remember that you can always add your own custom CSS and JS code to templates/website/TemaAdi/css/custom.css and templates/website/TemaAdi/js/custom.js. However, you can also dynamically add predefined assets supported by the theme within this method.
      *
      * @param object $theme
      * @param array<string,mixed> $pageData
@@ -396,7 +393,7 @@ JS;
     private static function addWidgetAssets(
         object $theme
     ): void {
-        $requiredAssets = []; // Eklemek istediğiniz asset'leri bu değişkene atayabilirsiniz. Örneğin: ['magnific', 'select2'] vs.
+        $requiredAssets = []; // You can assign the assets you want to add to this variable. For example: ['magnific', 'select2'], etc.
 
         if (!empty($requiredAssets) && is_callable([$theme, 'registerWidgetAsset'])) {
             $theme->registerWidgetAsset($requiredAssets);
